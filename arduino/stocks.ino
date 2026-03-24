@@ -1,0 +1,61 @@
+#include <MD_MAX72xx.h>
+#include <SPI.h>
+
+#define HARDWARE_TYPE MD_MAX72XX::GENERIC_HW
+#define MAX_DEVICES 4
+
+#define CLK_PIN   3
+#define DATA_PIN  2
+#define CS_PIN    4
+
+byte smiley[8][8] = {
+  {0x3c,0x42,0xa5,0x81,0xa5,0x99,0x42,0x3c},
+  {0x3c,0x42,0x89,0xa1,0xa5,0x91,0x42,0x3c},
+  {0x3c,0x42,0x95,0xa1,0xa1,0x95,0x42,0x3c},
+  {0x3c,0x42,0x91,0xa5,0xa1,0x89,0x42,0x3c},
+  {0x3c,0x42,0x99,0xa5,0x81,0xa5,0x42,0x3c},
+  {0x3c,0x42,0x99,0x85,0xa1,0x89,0x42,0x3c},
+  {0x3c,0x42,0xa9,0x85,0x85,0xa9,0x42,0x3c},
+  {0x3c,0x42,0x89,0xa1,0x85,0x99,0x42,0x3c}
+};
+
+MD_MAX72XX display = MD_MAX72XX(HARDWARE_TYPE, DATA_PIN, CLK_PIN, CS_PIN, MAX_DEVICES);
+
+void setup() {
+  Serial.begin(115200);
+  display.begin();
+  display.control(MD_MAX72XX::INTENSITY, 8);
+  display.clear();
+}
+
+#define D 2
+long last = 4;
+void frame() {
+  long rand = random(2 * D + 1);
+  last += rand - D;
+  if(last > 7) {
+    last = 7;
+  }
+
+  if(last < 0) {
+    last = 0;
+  }
+
+  int rows[MAX_DEVICES];
+  for(int b = 0; b < 4; b++) {
+    rows[b] = display.getRow(b, 0);
+  }
+
+  display.setRow(0, 7, 1 << last);
+
+  display.transform(MD_MAX72XX::TSU);
+
+  for(int b = 1; b < MAX_DEVICES; b++) {
+    display.setRow(b, 7, rows[b-1]);
+  }
+
+}
+
+void loop() {
+  frame();
+}

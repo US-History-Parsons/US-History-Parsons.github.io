@@ -79,3 +79,9 @@ button:active {
 p {
     margin: 0;
 }
+
+li {
+    margin-bottom: 0.5rem;
+    align-items: right;
+
+}
